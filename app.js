@@ -9,6 +9,11 @@ var usersRouter = require('./routes/users');
 var devicesRouter = require('./routes/devices');
 var streamRouter = require('./routes/stream');
 
+const webpack = require('webpack');
+const webpackDevMiddleware = require('webpack-dev-middleware');
+const webpackHotMiddleware = require('webpack-hot-middleware');
+const config = require('./webpack.dev.js');
+
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
@@ -22,7 +27,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(function(req, res, next){
+app.use(function (req, res, next) {
   res.io = io;
   next();
 });
@@ -33,12 +38,12 @@ app.use('/stream', streamRouter);
 app.use('/devices', devicesRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -48,4 +53,27 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-module.exports = {app: app, server: server};
+// webpack
+if (devServerEnabled) {
+  //reload=true:Enable auto reloading when changing JS files or content
+  //timeout=1000:Time from disconnecting from server to reconnecting
+  config.entry.app.unshift(
+    'webpack-hot-middleware/client?reload=true&timeout=1000'
+  );
+
+  //Add HMR plugin
+  config.plugins.push(new webpack.HotModuleReplacementPlugin());
+
+  const compiler = webpack(config);
+
+  //Enable "webpack-dev-middleware"
+  app.use(
+    webpackDevMiddleware(compiler, {
+      publicPath: config.output.publicPath
+    })
+  );
+
+  //Enable "webpack-hot-middleware"
+  app.use(webpackHotMiddleware(compiler));
+}
+module.exports = { app: app, server: server };
