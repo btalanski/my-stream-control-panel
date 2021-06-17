@@ -1,4 +1,3 @@
-const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const pkg = require('./package.json');
 require('dotenv').config();
 
@@ -34,7 +33,7 @@ module.exports = {
   },
   htmlWebpackPluginConfig: {
     title: 'My stream control panel',
-    template: './src/index.html'
+    template: './src/templates/index.pug'
   },
   criticalCssConfig: {},
   devServerConfig: {
@@ -72,8 +71,8 @@ module.exports = {
     favicons: {
       appName: pkg.name,
       appDescription: pkg.description,
-      developerName: pkg.author.name,
-      developerURL: pkg.author.url,
+      // developerName: pkg.author.name,
+      // developerURL: pkg.author.url,
       icons: {
         android: false,
         appleIcon: false,

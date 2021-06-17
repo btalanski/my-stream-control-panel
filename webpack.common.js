@@ -56,7 +56,7 @@ const baseConfig = merge([
         },
         {
           test: /\.jade$/,
-          loader: 'jade'
+          loader: 'pug-loader'
         }
       ]
     },
@@ -66,7 +66,7 @@ const baseConfig = merge([
         excludeWarnings: true,
         alwaysNotify: true
       }),
-      new WebpackManifestPlugin(configureManifest('manifest.json')),
+      // new WebpackManifestPlugin(configureManifest('manifest.json')),
       ...(settings.copyWebpackConfig.patterns.length > 0
         ? [new CopyWebpackPlugin(settings.copyWebpackConfig)]
         : [])
