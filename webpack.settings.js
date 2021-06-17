@@ -38,7 +38,7 @@ module.exports = {
   },
   criticalCssConfig: {},
   devServerConfig: {
-    public: () => process.env.DEVSERVER_PUBLIC || 'http://localhost:8080',
+    public: () => process.env.DEVSERVER_PUBLIC || 'http://0.0.0.0:8080',
     host: () => process.env.DEVSERVER_HOST || '0.0.0.0',
     poll: () => process.env.DEVSERVER_POLL || false,
     port: () => process.env.DEVSERVER_PORT || 8080,
