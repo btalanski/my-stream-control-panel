@@ -59,7 +59,7 @@ app.use(function (err, req, res, next) {
 });
 
 // webpack
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.WEBPACK_DEV) {
   //reload=true:Enable auto reloading when changing JS files or content
   //timeout=1000:Time from disconnecting from server to reconnecting
   // config.entry.app.unshift(
@@ -74,11 +74,13 @@ if (process.env.NODE_ENV !== 'production') {
   //Enable "webpack-dev-middleware"
   app.use(
     webpackDevMiddleware(compiler, {
-      publicPath: config.output.publicPath
+      writeToDisk: true,
     })
   );
 
   //Enable "webpack-hot-middleware"
   app.use(webpackHotMiddleware(compiler));
+  console.log("Using webpack dev server");
 }
+
 module.exports = { app: app, server: server };

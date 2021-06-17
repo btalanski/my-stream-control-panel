@@ -23,17 +23,9 @@ module.exports = merge(common, {
       {
         test: /\.(css|sss)$/i,
         use: [
-          'style-loader',
-          {
-            loader: 'css-loader',
-            options: {
-              importLoaders: 2,
-              url: true
-            }
-          },
-          {
-            loader: 'postcss-loader'
-          }
+          "style-loader", // creates style nodes from JS strings
+          "css-loader", // translates CSS into CommonJS
+          "sass-loader" // compiles Sass to CSS, using Node Sass by default
         ]
       },
       {

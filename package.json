@@ -3,10 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "cross-env NODE_ENV=production && npm run build:prod && node ./bin/www",
-    "dev": "nodemon ./bin/www",
+    "start": "cross-env NODE_ENV=production npm run build:prod && node ./bin/www",
+    "dev": "webpack --config webpack.dev.js && nodemon ./bin/www",
+    "dev:serve": "cross-env WEBPACK_DEV=true node ./bin/www",
     "build:prod": "cross-env NODE_ENV=production webpack --config webpack.prod.js --progress",
     "build:dev": "webpack-dashboard -- webpack --config webpack.dev.js"
+    
   },
   "browserslist": [
     "defaults",
