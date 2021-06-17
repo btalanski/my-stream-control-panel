@@ -59,15 +59,15 @@ app.use(function (err, req, res, next) {
 });
 
 // webpack
-if (devServerEnabled) {
+if (process.env.NODE_ENV !== 'production') {
   //reload=true:Enable auto reloading when changing JS files or content
   //timeout=1000:Time from disconnecting from server to reconnecting
-  config.entry.app.unshift(
-    'webpack-hot-middleware/client?reload=true&timeout=1000'
-  );
+  // config.entry.app.unshift(
+  //   'webpack-hot-middleware/client?reload=true&timeout=1000'
+  // );
 
-  //Add HMR plugin
-  config.plugins.push(new webpack.HotModuleReplacementPlugin());
+  // //Add HMR plugin
+  // config.plugins.push(new webpack.HotModuleReplacementPlugin());
 
   const compiler = webpack(config);
 

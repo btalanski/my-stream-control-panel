@@ -8,6 +8,10 @@
     "build:prod": "cross-env NODE_ENV=production webpack --config webpack.prod.js --progress",
     "build:dev": "webpack-dashboard -- webpack --config webpack.dev.js"
   },
+  "browserslist": [
+    "defaults",
+    "not IE 11"
+  ],
   "dependencies": {
     "body-parser": "^1.18.3",
     "compression": "^1.7.4",

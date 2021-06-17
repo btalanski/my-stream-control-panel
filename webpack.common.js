@@ -39,8 +39,9 @@ const baseConfig = merge([
     output: {
       path: path.resolve(__dirname, settings.paths.dist.base),
       publicPath: settings.urls.publicPath(),
-      filename: '[name].[contenthash:5].bundle.js',
-      assetModuleFilename: 'img/[name][ext]'
+      filename: './js/[name].[contenthash:5].bundle.js',
+      assetModuleFilename: 'img/[name][ext]',
+      clean: true
     },
     resolve: {
       alias: {}
@@ -55,7 +56,7 @@ const baseConfig = merge([
           }
         },
         {
-          test: /\.jade$/,
+          test: /\.pug$/,
           loader: 'pug-loader'
         }
       ]

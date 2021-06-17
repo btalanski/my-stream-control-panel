@@ -14,10 +14,7 @@ const settings = require('./webpack.settings.js');
 
 module.exports = merge(common, {
   output: {
-    path: '/',
-    filename: 'js/[name].js',
-    publicPath: settings.devServerConfig.public() + '/',
-    pathinfo: true
+    filename: './js/[name].bundle.js',
   },
   mode: 'development',
   devtool: 'eval-cheap-module-source-map',
