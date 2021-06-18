@@ -5,6 +5,9 @@ import { MemoryRouter } from 'react-router';
 import { Switch, Route } from 'react-router-dom';
 import { OutputSettings } from '../../routes/OutputSettings';
 import { makeStyles } from '@material-ui/core/styles';
+import { useAsync } from '../../hooks/useAsync';
+import { AppContext } from '../../context/appContext';
+import * as axios from 'axios';
 
 const useStyles = makeStyles((theme) => ({
   backdrop: {
@@ -13,28 +16,58 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
+const getDeviceDetails = () => {
+  return axios
+    .get('/devices')
+    .then(function (response) {
+      // handle success
+      // console.log(response);
+      return response.data;
+    })
+    .catch(function (error) {
+      // handle error
+      console.log(error);
+    });
+};
+
 export const App = () => {
+  const [state, setState] = React.useState({ device: null });
+  const { execute, status, value, error } = useAsync(getDeviceDetails, false);
   const classes = useStyles();
-  const isLoading = false;
+
+  React.useEffect(() => execute(), []);
+
+  React.useEffect(() => {
+    console.log(value, error);
+    if (!error) {
+      setState((prevState) => ({
+        ...prevState,
+        device: value
+      }));
+    }
+  }, [value, error]);
+
   return (
     <React.Fragment>
       <CssBaseline>
-        <MemoryRouter>
-          <AppMenu />
-          <Switch>
-            <Route path="/output-settings">
-              <OutputSettings />
-            </Route>
-            <Route path="/">
-              <Home />
-            </Route>
-          </Switch>
-        </MemoryRouter>
-        {isLoading && (
-          <Backdrop open={isLoading} className={classes.backdrop}>
-            <CircularProgress color="inherit" />
-          </Backdrop>
-        )}
+        <AppContext.Provider value={state}>
+          <MemoryRouter>
+            <AppMenu />
+            <Switch>
+              <Route path="/output-settings">
+                <OutputSettings />
+              </Route>
+              <Route path="/">
+                <Home />
+              </Route>
+            </Switch>
+          </MemoryRouter>
+          {status === 'pending' && (
+            <Backdrop open={true} className={classes.backdrop}>
+              <CircularProgress color="inherit" />
+            </Backdrop>
+          )}
+        </AppContext.Provider>
       </CssBaseline>
     </React.Fragment>
   );

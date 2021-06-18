@@ -8,10 +8,15 @@ import {
   InputLabel,
   Button,
   InputAdornment,
-  Typography
+  Typography,
+  Backdrop,
+  CircularProgress
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
+import { useAsync } from '../../hooks/useAsync';
+import { AppContext } from '../../context/appContext';
+import * as axios from 'axios';
 
 const useStyles = makeStyles((theme) => ({
   myTitle: {
@@ -24,15 +29,37 @@ const useStyles = makeStyles((theme) => ({
     '& > *': {
       margin: theme.spacing(1, 'auto')
     }
+  },
+  backdrop: {
+    zIndex: theme.zIndex.drawer + 1,
+    color: '#fff'
   }
 }));
 
+const startStream = (params) => {
+  return axios
+    .post('/stream/start', params)
+    .then(function (response) {
+      // handle success
+      // console.log(response);
+      return response.data;
+    })
+    .catch(function (error) {
+      // handle error
+      console.log(error);
+    });
+};
+
 export const OutputSettings = () => {
   const classes = useStyles();
+  const { execute, status, value, error } = useAsync(startStream, false);
+  const { device = {} } = React.useContext(AppContext);
+  const { formats = [] } = device;
+
   const [defaultSettings, setdefaultSettings] = useLocalStorage(
     'outputSettings',
     {
-      presetIndex: 0,
+      presetValue: '',
       videoBitRate: '1024',
       audioBitRate: '128',
       srtServerUrl: 'srt://',
@@ -40,12 +67,25 @@ export const OutputSettings = () => {
     }
   );
 
+  const renderMenuItems = () => {
+    return formats.map((format, index) => {
+      const label = `${format.width}x${format.height} - ${format.interval.denominator}fps (${format.formatName})`;
+      const value = `${format.width}x${format.height}`;
+      return (
+        <MenuItem key={label} value={value}>
+          {label}
+        </MenuItem>
+      );
+    });
+  };
+
   const handleSelectChange = (event) => {
     setdefaultSettings((prevSettings) => ({
       ...prevSettings,
-      presetIndex: event.target.value
+      presetValue: event.target.value
     }));
   };
+
   const handleChange = (event) => {
     const newValue = event.target.value;
     setdefaultSettings((prevSettings) => ({
@@ -54,7 +94,16 @@ export const OutputSettings = () => {
     }));
   };
 
-  const handleClick = () => true;
+  const handleClick = () => {
+    const params = {
+      inputVideoSize: defaultSettings.presetValue,
+      inputFrameRate: 30,
+      outputVideoBitRate: defaultSettings.videoBitRate,
+      outputAudioBitRate: defaultSettings.audioBitRate,
+      serverUrl: `srt://${defaultSettings.srtServerUrl}`
+    };
+    execute(params);
+  };
 
   return (
     <Container className={classes.myContainer} maxWidth="xl">
@@ -70,9 +119,7 @@ export const OutputSettings = () => {
             value={defaultSettings.presetIndex}
             onChange={handleSelectChange}
           >
-            <MenuItem value={0}>480p - 30fps</MenuItem>
-            <MenuItem value={1}>720p - 30fps</MenuItem>
-            <MenuItem value={2}>1080p - 30fps</MenuItem>
+            {renderMenuItems()}
           </Select>
         </FormControl>
         <TextField
@@ -127,6 +174,11 @@ export const OutputSettings = () => {
           Start streaming
         </Button>
       </form>
+      {status === 'pending' && (
+        <Backdrop open={true} className={classes.backdrop}>
+          <CircularProgress color="inherit" />
+        </Backdrop>
+      )}
     </Container>
   );
 };
