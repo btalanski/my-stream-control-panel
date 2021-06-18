@@ -7,9 +7,9 @@ let ffmpeg;
 
 /* GET home page. */
 router.post('/start', function (req, res, next) {
-  console.log(req.body);
   const {
     serverUrl,
+    serverMonitorUrl,
     audioDevice = 'hw:1,0',
     inputFormat = 'h264',
     inputVideoSize = '1280x720',
@@ -111,21 +111,47 @@ router.post('/start', function (req, res, next) {
           };
         }, {});
         console.log(log);
-        res.io.emit('encoding_status', log);
+
+        const { frame, fps, size, time, bitrate, speed } = log;
+        res.io.emit('streaming_status', {
+          isStreaming: true,
+          error: false,
+          errorMsg: '',
+          info: { frame, fps, size, time, bitrate, speed }
+        });
       }
     } else {
       console.error(`stderr: ${data}`);
+      res.io.emit('streaming_status', {
+        isStreaming: false,
+        error: true,
+        errorMsg: `${data}`,
+        info: null
+      });
     }
   });
 
   ffmpeg.on('close', (code) => {
     console.log(`child process exited with code ${code}`);
+    res.io.emit('streaming_status', {
+      isStreaming: false,
+      error: true,
+      errorMsg: `child process exited with code ${code}`,
+      info: null
+    });
   });
 
   ffmpeg.on('exit', function (code, signal) {
     console.log(
       'child process exited with ' + `code ${code} and signal ${signal}`
     );
+    res.io.emit('streaming_status', {
+      isStreaming: false,
+      error: true,
+      errorMsg:
+        'child process exited with ' + `code ${code} and signal ${signal}`,
+      info: null
+    });
   });
 
   res.send('started');

@@ -20,10 +20,10 @@ import * as axios from 'axios';
 
 const useStyles = makeStyles((theme) => ({
   myTitle: {
-    margin: theme.spacing(0, 0, 2, 0)
+    margin: 0
   },
   myContainer: {
-    margin: theme.spacing(3, 'auto')
+    margin: theme.spacing(6, 'auto')
   },
   form: {
     '& > *': {
@@ -36,43 +36,54 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const startStream = (params) => {
-  return axios
-    .post('/stream/start', params)
-    .then(function (response) {
-      // handle success
-      // console.log(response);
-      return response.data;
-    })
-    .catch(function (error) {
-      // handle error
-      console.log(error);
-    });
-};
-
 export const OutputSettings = () => {
   const classes = useStyles();
-  const { execute, status, value, error } = useAsync(startStream, false);
   const { device = {} } = React.useContext(AppContext);
   const { formats = [] } = device;
 
   const [defaultSettings, setdefaultSettings] = useLocalStorage(
     'outputSettings',
     {
-      presetValue: '',
-      videoBitRate: '1024',
-      audioBitRate: '128',
-      srtServerUrl: 'srt://',
-      srtStatusUrl: 'http://'
+      presetIdx: '',
+      videoBitRate: '',
+      videoFps: '',
+      videoSize: '',
+      audioBitRate: '',
+      srtServerUrl: '',
+      srtStatusUrl: ''
     }
   );
+
+  const startStream = () => {
+    const format = formats[defaultSettings.presetIdx];
+    const params = {
+      inputVideoSize: `${format.width}x${format.height}`,
+      inputFrameRate: format.interval.denominator,
+      outputVideoBitRate: defaultSettings.videoBitRate,
+      outputAudioBitRate: defaultSettings.audioBitRate,
+      serverUrl: `srt://${defaultSettings.srtServerUrl}`
+    };
+
+    return axios
+      .post('/stream/start', params)
+      .then(function (response) {
+        // handle success
+        // console.log(response);
+        return response.data;
+      })
+      .catch(function (error) {
+        // handle error
+        console.log(error);
+      });
+  };
+
+  const { execute, status, value, error } = useAsync(startStream, false);
 
   const renderMenuItems = () => {
     return formats.map((format, index) => {
       const label = `${format.width}x${format.height} - ${format.interval.denominator}fps (${format.formatName})`;
-      const value = `${format.width}x${format.height}`;
       return (
-        <MenuItem key={label} value={value}>
+        <MenuItem key={label} value={index}>
           {label}
         </MenuItem>
       );
@@ -82,7 +93,7 @@ export const OutputSettings = () => {
   const handleSelectChange = (event) => {
     setdefaultSettings((prevSettings) => ({
       ...prevSettings,
-      presetValue: event.target.value
+      presetIdx: event.target.value
     }));
   };
 
@@ -94,19 +105,10 @@ export const OutputSettings = () => {
     }));
   };
 
-  const handleClick = () => {
-    const params = {
-      inputVideoSize: defaultSettings.presetValue,
-      inputFrameRate: 30,
-      outputVideoBitRate: defaultSettings.videoBitRate,
-      outputAudioBitRate: defaultSettings.audioBitRate,
-      serverUrl: `srt://${defaultSettings.srtServerUrl}`
-    };
-    execute(params);
-  };
+  const handleClick = () => execute();
 
   return (
-    <Container className={classes.myContainer} maxWidth="xl">
+    <Container className={classes.myContainer} maxWidth={'sm'}>
       <Typography className={classes.myTitle} component="h1" variant="h5">
         Output settings
       </Typography>
@@ -116,7 +118,7 @@ export const OutputSettings = () => {
           <Select
             labelId="presetIndexLabel"
             id="presetIndex"
-            value={defaultSettings.presetIndex}
+            value={defaultSettings.presetIdx}
             onChange={handleSelectChange}
           >
             {renderMenuItems()}

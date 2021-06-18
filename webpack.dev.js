@@ -14,18 +14,21 @@ const settings = require('./webpack.settings.js');
 
 module.exports = merge(common, {
   output: {
-    filename: './js/[name].bundle.js',
+    filename: './js/[name].bundle.js'
   },
   mode: 'development',
   devtool: 'eval-cheap-module-source-map',
+  watchOptions: {
+    ignored: /node_modules/
+  },
   module: {
     rules: [
       {
         test: /\.(css|sss)$/i,
         use: [
-          "style-loader", // creates style nodes from JS strings
-          "css-loader", // translates CSS into CommonJS
-          "sass-loader" // compiles Sass to CSS, using Node Sass by default
+          'style-loader', // creates style nodes from JS strings
+          'css-loader', // translates CSS into CommonJS
+          'sass-loader' // compiles Sass to CSS, using Node Sass by default
         ]
       },
       {

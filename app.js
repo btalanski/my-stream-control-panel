@@ -74,13 +74,13 @@ if (process.env.WEBPACK_DEV) {
   //Enable "webpack-dev-middleware"
   app.use(
     webpackDevMiddleware(compiler, {
-      writeToDisk: true,
+      writeToDisk: true
     })
   );
 
   //Enable "webpack-hot-middleware"
-  app.use(webpackHotMiddleware(compiler));
-  console.log("Using webpack dev server");
+  // app.use(webpackHotMiddleware(compiler));
+  console.log('Using webpack dev server');
 }
 
 module.exports = { app: app, server: server };
