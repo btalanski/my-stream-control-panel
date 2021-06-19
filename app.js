@@ -6,7 +6,6 @@ var logger = require('morgan');
 var compression = require('compression');
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
 var devicesRouter = require('./routes/devices');
 var streamRouter = require('./routes/stream');
 
@@ -38,7 +37,6 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/stream', streamRouter);
 app.use('/devices', devicesRouter);
 
