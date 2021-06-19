@@ -119,7 +119,7 @@ router.post('/start', function (req, res, next) {
   });
 
   ffmpeg.stderr.on('data', (data) => {
-    let msg = data.toString('utf-8');
+    let msg = data.toString('utf-8') || '';
     if (msg.includes('frame=')) {
       // frame= 6213 fps= 30 q=-0.0 size= 27474kB time=00:03:27.04 bitrate=1087.1kbits/s dup=0 drop=5 speed=0.999x
       const parts = msg
@@ -145,7 +145,7 @@ router.post('/start', function (req, res, next) {
       }
     } else if (
       msg.match(
-        /non-monotonous|h264_omx|lavfi|output #0|swscaler|avoption|stream #|input #/gi
+        /non-monotonous|h264_omx|lavfi|output #0|swscaler|avoption|stream #|input #|tbn|tbr/gi
       )
     ) {
       res.io.emit('streaming_status', {
