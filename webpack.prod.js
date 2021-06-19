@@ -109,24 +109,6 @@ const postcssLoaderConfig = () => {
   };
 };
 
-// Configure PurgeCSS
-const purgeCssConfig = () => {
-  const paths = (settings.purgeCssConfig.paths || []).map((entry) =>
-    path.join(__dirname, entry)
-  );
-  return {
-    keyframes: false,
-    paths: glob.sync(paths, { nodir: true }),
-    safelist: WhitelisterPlugin(settings.purgeCssConfig.whitelist),
-    extractors: [
-      {
-        extractor: (content) => content.match(/[^<>"'`\s]*[^<>"'`\s:]/g) || [],
-        extensions: settings.purgeCssConfig.extensions
-      }
-    ]
-  };
-};
-
 module.exports = merge(common, {
   output: {
     filename: 'js/[name].[chunkhash:5].bundle.js',
@@ -141,12 +123,11 @@ module.exports = merge(common, {
   },
   plugins: [
     new HtmlWebpackPlugin(settings.htmlWebpackPluginConfig),
-    new FaviconsWebpackPlugin(settings.faviconConfig),
+    // new FaviconsWebpackPlugin(settings.faviconConfig),
     new ImageminWebpWebpackPlugin(),
     new MiniCssExtractPlugin({
       filename: path.join('./css', '[name].[chunkhash:5].css'),
       chunkFilename: '[id].css'
-    }),
-    new PurgecssPlugin(purgeCssConfig())
+    })
   ]
 });
