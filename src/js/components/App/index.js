@@ -4,10 +4,14 @@ import { AppMenu } from '../AppMenu';
 import { MemoryRouter } from 'react-router';
 import { Switch, Route } from 'react-router-dom';
 import { OutputSettings } from '../../routes/OutputSettings';
+import { Home } from '../../routes/Home';
 import { makeStyles } from '@material-ui/core/styles';
 import { useAsync } from '../../hooks/useAsync';
 import { AppContext } from '../../context/appContext';
 import * as axios from 'axios';
+
+const io = require('socket.io-client');
+const socket = io();
 
 const useStyles = makeStyles((theme) => ({
   backdrop: {
@@ -30,8 +34,15 @@ const getDeviceDetails = () => {
     });
 };
 
+const initialState = {
+  device: null,
+  isStreaming: false,
+  streamHealthLog: null,
+  streamStatus: null
+};
+
 export const App = () => {
-  const [state, setState] = React.useState({ device: null });
+  const [state, setState] = React.useState(initialState);
   const { execute, status, value, error } = useAsync(getDeviceDetails, false);
   const classes = useStyles();
 
@@ -46,6 +57,39 @@ export const App = () => {
       }));
     }
   }, [value, error]);
+
+  React.useEffect(() => {
+    socket.on('streaming_status', (payload) => {
+      // console.log(payload);
+      const { isStreaming } = payload;
+
+      if (isStreaming) {
+        setState((prevState) => ({
+          ...prevState,
+          isStreaming,
+          streamHealthLog: payload.status
+        }));
+      } else {
+        setState((prevState) => ({
+          ...prevState,
+          isStreaming
+        }));
+      }
+    });
+
+    socket.on('streaming_monitor_status', (payload) => {
+      setState((prevState) => ({
+        ...prevState,
+        streamStatus: payload
+      }));
+    });
+
+    socket.on('disconnect', () => {});
+    socket.on('connect_failed', () => {});
+    socket.on('error', () => {});
+
+    return () => socket.disconnect();
+  }, []);
 
   return (
     <React.Fragment>
@@ -71,8 +115,4 @@ export const App = () => {
       </CssBaseline>
     </React.Fragment>
   );
-};
-
-export const Home = () => {
-  return <div>Home!</div>;
 };

@@ -38,7 +38,7 @@ const useStyles = makeStyles((theme) => ({
 
 export const OutputSettings = () => {
   const classes = useStyles();
-  const { device = {} } = React.useContext(AppContext);
+  const { device = {}, isStreaming } = React.useContext(AppContext);
   const { formats = [] } = device;
 
   const [defaultSettings, setdefaultSettings] = useLocalStorage(
@@ -54,30 +54,45 @@ export const OutputSettings = () => {
     }
   );
 
-  const startStream = () => {
-    const format = formats[defaultSettings.presetIdx];
-    const params = {
-      inputVideoSize: `${format.width}x${format.height}`,
-      inputFrameRate: format.interval.denominator,
-      outputVideoBitRate: defaultSettings.videoBitRate,
-      outputAudioBitRate: defaultSettings.audioBitRate,
-      serverUrl: `srt://${defaultSettings.srtServerUrl}`
-    };
+  const streamControl = React.useCallback(() => {
+    if (!isStreaming) {
+      const format = formats[defaultSettings.presetIdx];
+      const params = {
+        inputVideoSize: `${format.width}x${format.height}`,
+        inputFrameRate: format.interval.denominator,
+        outputVideoBitRate: defaultSettings.videoBitRate,
+        outputAudioBitRate: defaultSettings.audioBitRate,
+        serverUrl: `srt://${defaultSettings.srtServerUrl}`,
+        serverMonitorUrl: defaultSettings.srtStatusUrl
+      };
 
-    return axios
-      .post('/stream/start', params)
-      .then(function (response) {
-        // handle success
-        // console.log(response);
-        return response.data;
-      })
-      .catch(function (error) {
-        // handle error
-        console.log(error);
-      });
-  };
+      return axios
+        .post('/stream/start', params)
+        .then(function (response) {
+          // handle success
+          // console.log(response);
+          return response.data;
+        })
+        .catch(function (error) {
+          // handle error
+          console.log(error);
+        });
+    } else {
+      return axios
+        .post('/stream/stop')
+        .then(function (response) {
+          // handle success
+          // console.log(response);
+          return response.data;
+        })
+        .catch(function (error) {
+          // handle error
+          console.log(error);
+        });
+    }
+  }, [isStreaming]);
 
-  const { execute, status, value, error } = useAsync(startStream, false);
+  const { execute, status, value, error } = useAsync(streamControl, false);
 
   const renderMenuItems = () => {
     return formats.map((format, index) => {
@@ -104,8 +119,6 @@ export const OutputSettings = () => {
       [event.target.id]: newValue
     }));
   };
-
-  const handleClick = () => execute();
 
   return (
     <Container className={classes.myContainer} maxWidth={'sm'}>
@@ -170,10 +183,22 @@ export const OutputSettings = () => {
         <Button
           variant="contained"
           color="primary"
-          onClick={handleClick}
+          size="large"
+          onClick={execute}
+          disabled={isStreaming}
           fullWidth
         >
           Start streaming
+        </Button>
+        <Button
+          variant="outlined"
+          color="primary"
+          size="large"
+          onClick={execute}
+          disabled={!isStreaming}
+          fullWidth
+        >
+          Stop streaming
         </Button>
       </form>
       {status === 'pending' && (

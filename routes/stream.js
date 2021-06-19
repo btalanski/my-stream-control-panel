@@ -1,9 +1,11 @@
 var express = require('express');
 var router = express.Router();
-const spawn = require('child_process').spawn;
+var spawn = require('child_process').spawn;
 var kill = require('tree-kill');
+var axios = require('axios');
 
 let ffmpeg;
+let streamStatusInterval;
 
 /* GET home page. */
 router.post('/start', function (req, res, next) {
@@ -19,7 +21,7 @@ router.post('/start', function (req, res, next) {
     outputVideoBitRate = 1024,
     outputAudioBitRate = 128
   } = req.body;
-
+  console.log(req.body);
   if (!serverUrl) {
     res.status(401).send('Missing streaming server url.');
   }
@@ -89,6 +91,29 @@ router.post('/start', function (req, res, next) {
 
   ffmpeg = spawn('ffmpeg', args);
 
+  if (streamStatusInterval) {
+    clearInterval(streamStatusInterval);
+  }
+
+  if (!!serverMonitorUrl) {
+    streamStatusInterval = setInterval(() => {
+      axios
+        .get(serverMonitorUrl)
+        .then((response) => {
+          console.log(response.data);
+          const { data } = response;
+          const status =
+            (data && data.publishers[Object.keys(data.publishers)[0]]) || null;
+          res.io.emit('streaming_monitor_status', status);
+        })
+        .catch((error) => {
+          // handle error
+          console.log(error);
+          clearInterval(streamStatusInterval);
+        });
+    }, 1000);
+  }
+
   ffmpeg.stdout.on('data', (data) => {
     console.log(`stdout: ${data}`);
   });
@@ -110,24 +135,31 @@ router.post('/start', function (req, res, next) {
             [key]: value
           };
         }, {});
-        console.log(log);
+        // console.log(log);
 
         const { frame, fps, size, time, bitrate, speed } = log;
         res.io.emit('streaming_status', {
           isStreaming: true,
-          error: false,
-          errorMsg: '',
-          info: { frame, fps, size, time, bitrate, speed }
+          status: { frame, fps, size, time, bitrate, speed }
         });
       }
+    } else if (
+      msg.match(
+        /non-monotonous|h264_omx|lavfi|output #0|swscaler|avoption|stream #|input #/gi
+      )
+    ) {
+      res.io.emit('streaming_status', {
+        isStreaming: true,
+        infoMsg: msg
+      });
     } else {
       console.error(`stderr: ${data}`);
       res.io.emit('streaming_status', {
         isStreaming: false,
         error: true,
-        errorMsg: `${data}`,
-        info: null
+        errorMsg: `${data}`
       });
+      clearInterval(streamStatusInterval);
     }
   });
 
@@ -136,9 +168,9 @@ router.post('/start', function (req, res, next) {
     res.io.emit('streaming_status', {
       isStreaming: false,
       error: true,
-      errorMsg: `child process exited with code ${code}`,
-      info: null
+      errorMsg: `child process exited with code ${code}`
     });
+    clearInterval(streamStatusInterval);
   });
 
   ffmpeg.on('exit', function (code, signal) {
@@ -149,9 +181,9 @@ router.post('/start', function (req, res, next) {
       isStreaming: false,
       error: true,
       errorMsg:
-        'child process exited with ' + `code ${code} and signal ${signal}`,
-      info: null
+        'child process exited with ' + `code ${code} and signal ${signal}`
     });
+    clearInterval(streamStatusInterval);
   });
 
   res.send('started');
