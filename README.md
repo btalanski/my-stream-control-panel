@@ -1,10 +1,15 @@
 # my-stream-control-panel
 
 ## Requirements
+
 - FFMpeg installed and available on your PATH
 - v4l-utils installed
+- PM2 installed globally
+
+## Setting up the app to start on boot with PM2
 
 ### Installing v4l2camera
+
 ```
 mkdir -p node_modules
 cd node_modules
