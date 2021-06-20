@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "cross-env NODE_ENV=production node ./bin/www",
+    "start": "node -r dotenv/config ./bin/www dotenv_config_path=.env",
     "dev": "webpack --config webpack.dev.js && nodemon ./bin/www",
     "dev:serve": "cross-env WEBPACK_DEV=true node ./bin/www",
     "build": "cross-env NODE_ENV=production webpack --config webpack.prod.js --progress",
