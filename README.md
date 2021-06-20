@@ -26,6 +26,13 @@ Next `cd` to the directory where the repo was clonned to and install the require
 npm install --only=prod
 ```
 
+Setup a local `.env` file for your application on the root of the cloned repo:
+
+```
+PORT=<YOUR DESIRED PORT>
+NODE_ENV=production
+```
+
 Follow the steps below to install v4l2camera:
 
 ```
@@ -40,7 +47,7 @@ cd ../..
 Finally start the application using PM2:
 
 ```
-export NODE_ENV=production && pm2 start ./bin/www
+pm2 start ecosystem.config.js
 ```
 
 Next, you need to save the current list of processes to manage using PM2 so that they will re-spawn at system boot
