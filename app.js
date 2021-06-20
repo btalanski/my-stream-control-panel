@@ -9,11 +9,6 @@ var indexRouter = require('./routes/index');
 var devicesRouter = require('./routes/devices');
 var streamRouter = require('./routes/stream');
 
-const webpack = require('webpack');
-const webpackDevMiddleware = require('webpack-dev-middleware');
-const webpackHotMiddleware = require('webpack-hot-middleware');
-const config = require('./webpack.dev.js');
-
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
@@ -58,6 +53,10 @@ app.use(function (err, req, res, next) {
 
 // webpack
 if (process.env.WEBPACK_DEV) {
+  const webpack = require('webpack');
+  const webpackDevMiddleware = require('webpack-dev-middleware');
+  const webpackHotMiddleware = require('webpack-hot-middleware');
+  const config = require('./webpack.dev.js');
   //reload=true:Enable auto reloading when changing JS files or content
   //timeout=1000:Time from disconnecting from server to reconnecting
   // config.entry.app.unshift(
