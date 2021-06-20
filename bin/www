@@ -3,8 +3,6 @@
 /**
  * Module dependencies.
  */
-require('dotenv').config();
-
 var app = require('../app').app;
 var debug = require('debug')('my-stream-control-panel:server');
 // var http = require('http');
@@ -83,5 +81,6 @@ function onError(error) {
 function onListening() {
   var addr = server.address();
   var bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
+  console.info('App started with NODE_ENV', process.env.NODE_ENV);
   debug('Listening on ' + bind);
 }
