@@ -45,6 +45,7 @@ export const OutputSettings = () => {
     'outputSettings',
     {
       presetIdx: '',
+      transcodeSettings: '',
       videoBitRate: '',
       videoFps: '',
       videoSize: '',
@@ -60,6 +61,7 @@ export const OutputSettings = () => {
       const params = {
         inputVideoSize: `${format.width}x${format.height}`,
         inputFrameRate: format.interval.denominator,
+        outputTranscode: defaultSettings.transcodeSettings === 'custom',
         outputVideoBitRate: defaultSettings.videoBitRate,
         outputAudioBitRate: defaultSettings.audioBitRate,
         serverUrl: `srt://${defaultSettings.srtServerUrl}`,
@@ -112,6 +114,13 @@ export const OutputSettings = () => {
     }));
   };
 
+  const handleTrancodeSettingsChange = (event) => {
+    setdefaultSettings((prevSettings) => ({
+      ...prevSettings,
+      transcodeSettings: event.target.value
+    }));
+  };
+
   const handleChange = (event) => {
     const newValue = event.target.value;
     setdefaultSettings((prevSettings) => ({
@@ -122,43 +131,77 @@ export const OutputSettings = () => {
 
   return (
     <Container className={classes.myContainer} maxWidth={'sm'}>
-      <Typography className={classes.myTitle} component="h1" variant="h5">
-        Output settings
-      </Typography>
       <form className={classes.form} noValidate autoComplete="off">
-        <FormControl fullWidth>
-          <InputLabel id="presetIndexLabel">Streaming preset</InputLabel>
+        <Typography className={classes.myTitle} component="h1" variant="h5">
+          Input settings
+        </Typography>
+        <FormControl variant="outlined" fullWidth>
+          <InputLabel id="preset-index-label">Video preset</InputLabel>
           <Select
-            labelId="presetIndexLabel"
+            labelId="preset-index-label"
             id="presetIndex"
+            label="Input settings"
             value={defaultSettings.presetIdx}
             onChange={handleSelectChange}
           >
             {renderMenuItems()}
           </Select>
         </FormControl>
-        <TextField
-          id="videoBitRate"
-          label="Output video bitrate"
-          color="secondary"
-          value={defaultSettings.videoBitRate}
-          onChange={handleChange}
-          InputProps={{
-            endAdornment: <InputAdornment position="end">kbps</InputAdornment>
-          }}
-          fullWidth
-        />
-        <TextField
-          id="audioBitRate"
-          label="Output audio bitrate"
-          color="secondary"
-          value={defaultSettings.audioBitRate}
-          onChange={handleChange}
-          InputProps={{
-            endAdornment: <InputAdornment position="end">kbps</InputAdornment>
-          }}
-          fullWidth
-        />
+        <Typography className={classes.myTitle} component="h1" variant="h5">
+          Output settings
+        </Typography>
+        <FormControl variant="outlined" fullWidth>
+          <InputLabel id="transcoding-settings-label">
+            Transcoding preset
+          </InputLabel>
+          <Select
+            labelId="transcoding-settings-label"
+            id="transcodeSettings"
+            label="Transcoding preset"
+            value={defaultSettings.transcodeSettings}
+            onChange={handleTrancodeSettingsChange}
+          >
+            <MenuItem value="copy">
+              Copy input settings (No transcoding)
+            </MenuItem>
+            <MenuItem value="custom">Custom transcoding settings</MenuItem>
+          </Select>
+        </FormControl>
+        {defaultSettings.transcodeSettings === 'custom' && (
+          <>
+            <TextField
+              id="videoBitRate"
+              label="Output video bitrate"
+              color="secondary"
+              value={defaultSettings.videoBitRate}
+              onChange={handleChange}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">kbps</InputAdornment>
+                )
+              }}
+              variant="outlined"
+              fullWidth
+            />
+            <TextField
+              id="audioBitRate"
+              label="Output audio bitrate"
+              color="secondary"
+              value={defaultSettings.audioBitRate}
+              onChange={handleChange}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">kbps</InputAdornment>
+                )
+              }}
+              variant="outlined"
+              fullWidth
+            />
+          </>
+        )}
+        <Typography className={classes.myTitle} component="h1" variant="h5">
+          Output destination
+        </Typography>
         <TextField
           id="srtServerUrl"
           label="SRT server url"
@@ -170,6 +213,7 @@ export const OutputSettings = () => {
               <InputAdornment position="start">srt://</InputAdornment>
             )
           }}
+          variant="outlined"
           fullWidth
         />
         <TextField
@@ -178,6 +222,7 @@ export const OutputSettings = () => {
           color="secondary"
           value={defaultSettings.srtStatusUrl}
           onChange={handleChange}
+          variant="outlined"
           fullWidth
         />
         <Button
