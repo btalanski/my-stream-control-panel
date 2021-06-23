@@ -17,6 +17,7 @@ router.post('/start', function (req, res, next) {
     inputVideoSize = '1280x720',
     inputFrameRate = 30,
     inputVideoDevice = '/dev/video0',
+    outputTranscode = false,
     outputPixFormat = 'yuv420p',
     outputVideoBitRate = 1024,
     outputAudioBitRate = 128
@@ -57,7 +58,21 @@ router.post('/start', function (req, res, next) {
     '0',
     '-sn',
     '-pix_fmt',
-    `${outputPixFormat}`,
+    `${outputPixFormat}`
+  ];
+
+  const noTranscodingArgs = [
+    '-c:v',
+    'copy',
+    '-b:a',
+    '128k',
+    '-c:a',
+    'aac',
+    '-g',
+    `${inputFrameRate * 2}`
+  ];
+
+  const transcodingArgs = [
     '-c:v',
     'h264_omx',
     '-b:v',
@@ -77,7 +92,10 @@ router.post('/start', function (req, res, next) {
     '-c:a',
     'aac',
     '-g',
-    `${inputFrameRate * 2}`,
+    `${inputFrameRate * 2}`
+  ];
+
+  const destinationArgs = [
     '-f',
     'mpegts',
     '-flush_packets',
@@ -85,11 +103,17 @@ router.post('/start', function (req, res, next) {
     `${serverUrl}`
   ];
 
+  const ffmpegCmd = [
+    ...args,
+    ...(outputTranscode ? transcodingArgs : noTranscodingArgs),
+    ...destinationArgs
+  ];
+
   if (ffmpeg && ffmpeg.pid) {
     kill(ffmpeg.pid);
   }
 
-  ffmpeg = spawn('ffmpeg', args);
+  ffmpeg = spawn('ffmpeg', ffmpegCmd);
 
   if (streamStatusInterval) {
     clearInterval(streamStatusInterval);
@@ -103,7 +127,10 @@ router.post('/start', function (req, res, next) {
           console.log(response.data);
           const { data } = response;
           const status =
-            (data && data.publishers[Object.keys(data.publishers)[0]]) || null;
+            (data &&
+              data.publishers &&
+              data.publishers[Object.keys(data.publishers)[0]]) ||
+            null;
           res.io.emit('streaming_monitor_status', status);
         })
         .catch((error) => {
