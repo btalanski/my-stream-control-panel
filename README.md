@@ -1,5 +1,7 @@
 # my-stream-control-panel
 
+Simple application using ExpressJS, FFMpeg and React to allow myself to remotely control a raspberry pi with a USB webcam attached to it. The app allows it me define the streaming settings such as: resolution, frame rate, transcoding, destination server, etc. PM2 is used to allow the app to auto start as soon as the Pi is powered on.
+
 ## Requirements
 
 - FFMpeg installed and available on your PATH
