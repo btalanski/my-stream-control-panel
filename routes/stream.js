@@ -135,7 +135,7 @@ router.post('/start', function (req, res, next) {
       axios
         .get(serverMonitorUrl)
         .then((response) => {
-          console.log(response.data);
+          // console.log(response.data);
           const { data } = response;
           const status =
             (data &&
@@ -153,11 +153,12 @@ router.post('/start', function (req, res, next) {
   }
 
   ffmpeg.stdout.on('data', (data) => {
-    console.log(`stdout: ${data}`);
+    // console.log(`stdout: ${data}`);
   });
 
   ffmpeg.stderr.on('data', (data) => {
     let msg = data.toString('utf-8') || '';
+    // console.log(msg);
     if (msg.includes('frame=')) {
       // frame= 6213 fps= 30 q=-0.0 size= 27474kB time=00:03:27.04 bitrate=1087.1kbits/s dup=0 drop=5 speed=0.999x
       const parts = msg
@@ -191,7 +192,7 @@ router.post('/start', function (req, res, next) {
         infoMsg: msg
       });
     } else {
-      console.error(`stderr: ${data}`);
+      console.log(`stderr: ${data}`);
       res.io.emit('streaming_status', {
         isStreaming: false,
         error: true,
