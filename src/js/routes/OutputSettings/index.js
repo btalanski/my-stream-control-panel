@@ -67,7 +67,7 @@ export const OutputSettings = () => {
         serverUrl: `srt://${defaultSettings.srtServerUrl}`,
         serverMonitorUrl: defaultSettings.srtStatusUrl
       };
-
+      console.log('req params', params);
       return axios
         .post('/stream/start', params)
         .then(function (response) {
@@ -92,7 +92,7 @@ export const OutputSettings = () => {
           console.log(error);
         });
     }
-  }, [isStreaming]);
+  }, [isStreaming, defaultSettings]);
 
   const { execute, status, value, error } = useAsync(streamControl, false);
 

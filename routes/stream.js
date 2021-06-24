@@ -3,9 +3,20 @@ var router = express.Router();
 var spawn = require('child_process').spawn;
 var kill = require('tree-kill');
 var axios = require('axios');
+const URL = require('url').URL;
 
 let ffmpeg;
 let streamStatusInterval;
+
+// Helper
+const stringIsAValidUrl = (s) => {
+  try {
+    new URL(s);
+    return true;
+  } catch (err) {
+    return false;
+  }
+};
 
 /* GET home page. */
 router.post('/start', function (req, res, next) {
@@ -119,7 +130,7 @@ router.post('/start', function (req, res, next) {
     clearInterval(streamStatusInterval);
   }
 
-  if (!!serverMonitorUrl) {
+  if (!!serverMonitorUrl && stringIsAValidUrl(serverMonitorUrl)) {
     streamStatusInterval = setInterval(() => {
       axios
         .get(serverMonitorUrl)
