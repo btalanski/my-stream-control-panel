@@ -36,14 +36,14 @@ const ListItemLink = (props) => {
 export const AppDrawer = (props) => {
   const menuItems = [
     {
-      label: 'Stream status',
+      label: 'Status',
       target: '/',
       icon: <TuneIcon></TuneIcon>
     },
     {
       label: 'Output settings',
       target: '/output-settings',
-      icon: <TuneIcon></TuneIcon>
+      icon: <SettingsIcon />
     }
   ];
   return (
